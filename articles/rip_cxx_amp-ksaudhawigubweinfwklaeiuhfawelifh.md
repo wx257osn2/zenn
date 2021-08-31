@@ -84,7 +84,7 @@ C++ AMPは以下の特徴を備えたAPIであり，これらをオープンな�
 一方で既存資産を幅広い環境で動かすこと自体には積極的な姿勢を見せており，ちょうど去年の今頃には[Visual Studio 2019 16.8.0 Preview 2.1にてARM64サポートが追加された](https://developercommunity.visualstudio.com/t/Support-C-AMP-on-ARM64/467081#T-N1171839)との報告もある．
 
 …というのが表向きの状況なのだが，MSVCにおいて「メンテナンスモード」であるにも関わらず実際にはろくにメンテナンスされていなかった――Microsoftの都合に寄り添った物言いをすれば，メンテナンスが _追いついていなかった_ のが実態である．
-MSVCは近年C++20対応など標準規格準拠に向けたコンパイラへの変更が大量に行われており，その煽りを食っているのが既存の独自拡張の山だ．C++ AMPもその例に漏れず，過去のコンパイラでコンパイルできたコードがコンパイルできない，といったバグはもちろんのこと，そもそもヘッダが過去のMSVCの(規格違反な)仕様を前提として実装されていたためincludeするとビルドエラーになるなど，散々な状態であった．
+MSVCは近年C++20対応など標準規格準拠に向けたコンパイラへの変更が大量に行われており，その煽りを食っているのが既存の独自拡張の山だ．C++ AMPもその例に漏れず，過去のコンパイラでコンパイルできたコードがコンパイルできない，といったバグはもちろんのこと，そもそもヘッダが過去のMSVCの(規格違反な)仕様を前提として実装されていたためincludeするとビルドエラーになるなど，散々な状態であった．しかも，MSVCは古いバージョンが公式からは配布されてないので一度Visual StudioをC++ AMPが壊れた新しいバージョンに更新するとプロジェクトが詰むという地獄のような状況である．私はこれで詰んでいます．
 
 ## C++ AMPの死
 
@@ -131,12 +131,14 @@ C++ AMPでいくつかプロジェクトを書いてきたわけだが，これ�
 
 1. C++ AMP
     - 必要な要件は概ね満たしているが，だからといって使い続けるかと言われると厳しい．未来がないことが確定しているからだ．
+    - あと先述の通り，VS2019のMSVCでC++ AMPを運用するのはあまりにもbuggyが過ぎるので大変厳しい．
 2. CUDA
     - NVIDIAのGPUを使うことを念頭に置けば非常に現実的な解だと思う
         - (一応)単一ソースで書ける
         - [DirectXとのinterop APIが生えている](https://docs.nvidia.com/cuda/cuda-runtime-api/group__CUDART__D3D11.html)
         - ユーザーもかなりいるため，今更NVIDIAがCUDAを完全に廃止するとは思えない
     - 一方で，デバイスがNVIDIA GPUに縛られること， `nvcc` のC++サポートがありえん遅いので最新のC++機能を活用することが叶わないのはもちろん，最新の標準ヘッダを読ませるとフロントエンドがエラーを吐いてしまうので最新機能を併用するなら事実上シングルソースに出来ないという問題もある．
+    - あと単純にCUDA Toolkitのインストールやら更新やらが面倒という話も…
 3. OpenCL
     - シングルソースに出来ず，またカーネルの記述は(殆どのデバイスでは)OpenCL Cでの記述が要求されるので，正直厳しい．
     - Microsoftの拡張で[DirectX interop APIは生えている](https://www.khronos.org/registry/OpenCL/sdk/2.2/docs/man/html/cl_khr_d3d11_sharing.html)
@@ -169,6 +171,10 @@ C++ AMPでいくつかプロジェクトを書いてきたわけだが，これ�
 > [About the replacement technologies, we currently have plans to add them to the VC AMP documentation page at https://docs.microsoft.com/en-us/cpp/parallel/amp/cpp-amp-overview?view=msvc-160.](https://developercommunity.visualstudio.com/t/c-amp-headers-are-deprecated-what-is-the-replaceme/1495203#TPIN-N1497575)
 
 というわけで，そのうちMicrosoftから移行先についての提示があるかもしれない．尤も，Microsoft自身がC++ AMPが(その特殊な立ち位置故に)如何に貴重な技術であったかを理解していない可能性が非常に高く，おそらくC++ AMPユーザーが満足する移行先が提示されることはないのではないか，という不安が拭えないが…
+
+#### C++標準の並列プログラミング系の機能について
+
+ちゃんと調べてないけどたぶんグラフィックスAPIとのinteropが可能にはならないのではないかと思っていて，端から検討していない．まぁあと今すぐ移行できるわけでもないし…
 
 ## まとめ
 
