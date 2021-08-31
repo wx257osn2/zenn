@@ -3,7 +3,7 @@ title: "C++ AMPの死について"
 emoji: "🪦"
 type: "tech"
 topics: ["cpp"]
-published: false
+published: true
 ---
 
 # C++ AMPの死について
