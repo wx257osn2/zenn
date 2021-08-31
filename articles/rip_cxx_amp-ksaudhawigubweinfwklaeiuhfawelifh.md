@@ -70,7 +70,7 @@ C++ AMPは以下の特徴を備えたAPIであり，これらをオープンな�
     - CUDAやOpenCLとは異なりVisual Studioさえインストールされていれば動作する．
     - Visual StudioがインストールされているWindows開発環境は多いが，CUDA ToolkitやOpenCLのSDKなどが同時にインストールされている環境はそこまで多くない．環境構築は(特に不慣れな人間にとって)難しい作業であり，Windowsユーザーに「今すぐできるGPGPU」として布教する上で最適な環境がMSVCのC++ AMPなのだ．
 - グラフィックスAPIとのinteropがスムーズ
-    - これまたMSVC限定^[(C++ AMP規格上でも規定されているが拡張扱いであり，HCCは未対応かつC++ AMPのまともな実装が2つぐらいしかないので事実上)MSVC限定]の話になるが，MSVCではC++ AMPのバックエンドにDirectComputeを用いており，DirectXのdevice contextからC++ AMPの `accelerator_view` を作ったり，DirectXのtexture(`ID3D11Texture2D` や `IDXGISurface` など)とC++ AMPの `texture` (これは若干制約のある `array` のようなものだと思ってもらえれば良い)の相互変換を行えるなど，DirectXとのinteropが可能だ．
+    - これまたMSVC限定^[(C++ AMP規格上でも規定されているが拡張扱いであり，HCCは未対応かつC++ AMPのまともな実装がこの2つぐらいしかないので事実上)MSVC限定]の話になるが，MSVCではC++ AMPのバックエンドにDirectComputeを用いており，DirectXのdevice contextからC++ AMPの `accelerator_view` を作ったり，DirectXのtexture(`ID3D11Texture2D` や `IDXGISurface` など)とC++ AMPの `texture` (これは若干制約のある `array` のようなものだと思ってもらえれば良い)の相互変換を行えるなど，DirectXとのinteropが可能だ．
         - これにより，C++ AMPを用いたコンピュートシェーダで作り出した画像をDirectXで描画する，といった処理を無駄なH2D/D2H転送無しに行うことができる．
 - 環境に依存しない
     - MSVCの場合，バックエンドはDirectComputeであるため，GPUがNVIDIAであってもAMDであってもIntelであっても動作する．また，CPUバックエンドも存在するため最悪GPUがなくても動作する(当然GPUに比べれば遅いが)．
