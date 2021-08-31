@@ -12,10 +12,7 @@ C++ AMPが死ぬことが決まった．本稿では，C++ AMPとは何だった
 
 ## C++ AMPとは
 
-C++ AMP(**A**ccelerated **M**assive **P**arallelism)はMicrosoftが策定したデータ並列プログラミングAPIである^[公式曰く "C++ AMP is a compiler and programming model extension to C++ that enables the acceleration of C++ code on data-parallel hardware" とのことなので，「データ並列プログラミング向けのC++に対するコンパイラ及びプログラミングモデル拡張」と称するのが正しそうだが，面倒なので本稿では単に API と称することにする]．
-C++ AMPで記述されたプログラムはCPUのSIMD演算器やGPUといったデータ並列に強い(≒SIMDな)プロセッサにオフロードされ，高速に処理される^[CPUバックエンドも存在することから厳密にはヘテロジニアスコンピューティングAPIと呼ぶべきではなさそうだ(し，現に公式では _heterogenous_ ではなく _data-parallel_ という用語を多用している)が，本稿においてはNVIDIAのdiscrete GPUにオフロードする用途で利用しているので，事実上ヘテロジニアスコンピューティングAPIとして運用することを念頭に置く]．
-C++の名を冠する通り，C++ AMPはC++をベースとしてライブラリとコンパイラ拡張で構成されており，CUDA C/C++のようにデータ並列部分とそれ以外のコードを単一ソースに記述することができる．
-このあたりは実例を見たほうが速いという読者が多いと思うので，以下にsaxpyのコードを示す．
+C++ AMP(**A**ccelerated **M**assive **P**arallelism)はMicrosoftが策定したデータ並列プログラミングAPIである^[公式曰く "C++ AMP is a compiler and programming model extension to C++ that enables the acceleration of C++ code on data-parallel hardware" とのことなので，「データ並列プログラミング向けのC++に対するコンパイラ及びプログラミングモデル拡張」と称するのが正しそうだが，面倒なので本稿では単に API と称することにする]．C++ AMPで記述されたプログラムはCPUのSIMD演算器やGPUといったデータ並列に強い(≒SIMDな)プロセッサにオフロードされ，高速に処理される^[CPUバックエンドも存在することから厳密にはヘテロジニアスコンピューティングAPIと呼ぶべきではなさそうだ(し，現に公式では _heterogenous_ ではなく _data-parallel_ という用語を多用している)が，本稿においてはNVIDIAのdiscrete GPUにオフロードする用途で利用しているので，事実上ヘテロジニアスコンピューティングAPIとして運用することを念頭に置く]．C++の名を冠する通り，C++ AMPはC++をベースとしてライブラリとコンパイラ拡張で構成されており，CUDA C/C++のようにデータ並列部分とそれ以外のコードを単一ソースに記述することができる．このあたりは実例を見たほうが速いという読者が多いと思うので，以下にsaxpyのコードを示す．
 
 ```cpp
 #include<vector>
@@ -58,8 +55,7 @@ int main(){
 
 上記のように， `restrict(amp)` を付された関数を `concurrency::parallel_for_each` でオフロードすることができる．特にラムダ式を用いることでオフロードするコードをその場に記述することができる，というのがC++ AMPの売りの1つだったように思う．また， `std::vector` や連続するメモリ領域に格納されたデータについては `concurrency::array_view` を用いることでH2D/D2Hの転送を明に書かずとも裏でよしなにコヒーレンシを取ってくれたり，色々といい感じにヘテロジニアスなコードを書けるやつである．
 
-上述の通り，C++ AMPはMicrosoftが **策定** したAPIである．[C++ AMPの規格は公開されており](http://download.microsoft.com/download/2/2/9/22972859-15C2-4D96-97AE-93344241D56C/CppAMPOpenSpecificationV12.pdf)，誰でも自由にC++ AMPを実装することができる．
-「いくら公開されてるからと言ってMicrosoftが策定した言語拡張を誰が実装するんだよ」などと思われるかもしれないが，x265の開発を主導していることで有名な[MulticoreWare社](https://multicorewareinc.com/)がClangベースのヘテロジニアスコンピューティングコンパイラであるclampに実装し，プロジェクト名やら所属やらが転々とした結果今でもAMDのROCmプロジェクトの下に[hcc](https://github.com/RadeonOpenCompute/hcc)として転がっている．
+上述の通り，C++ AMPはMicrosoftが **策定** したAPIである．[C++ AMPの規格は公開されており](http://download.microsoft.com/download/2/2/9/22972859-15C2-4D96-97AE-93344241D56C/CppAMPOpenSpecificationV12.pdf)，誰でも自由にC++ AMPを実装することができる．「いくら公開されてるからと言ってMicrosoftが策定した言語拡張を誰が実装するんだよ」などと思われるかもしれないが，x265の開発を主導していることで有名な[MulticoreWare社](https://multicorewareinc.com/)がClangベースのヘテロジニアスコンピューティングコンパイラであるclampに実装し，プロジェクト名やら所属やらが転々とした結果今でもAMDのROCmプロジェクトの下に[hcc](https://github.com/RadeonOpenCompute/hcc)として転がっている．
 
 C++ AMPは以下の特徴を備えたAPIであり，これらをオープンな規格とまともな実装を揃えて提供されている例を私は他に知らない．
 
@@ -88,8 +84,7 @@ C++ AMPは以下の特徴を備えたAPIであり，これらをオープンな�
 一方で既存資産を幅広い環境で動かすこと自体には積極的な姿勢を見せており，ちょうど去年の今頃には[Visual Studio 2019 16.8.0 Preview 2.1にてARM64サポートが追加された](https://developercommunity.visualstudio.com/t/Support-C-AMP-on-ARM64/467081#T-N1171839)との報告もある．
 
 …というのが表向きの状況なのだが，MSVCにおいて「メンテナンスモード」であるにも関わらず実際にはろくにメンテナンスされていなかった――Microsoftの都合に寄り添った物言いをすれば，メンテナンスが _追いついていなかった_ のが実態である．
-MSVCは近年C++20対応など標準規格準拠に向けたコンパイラへの変更が大量に行われており，その煽りを食っているのが既存の独自拡張の山だ．
-C++ AMPもその例に漏れず，過去のコンパイラでコンパイルできたコードがコンパイルできない，といったバグはもちろんのこと，そもそもヘッダが過去のMSVCの(規格違反な)仕様を前提として実装されていたためincludeするとビルドエラーになるなど，散々な状態であった．
+MSVCは近年C++20対応など標準規格準拠に向けたコンパイラへの変更が大量に行われており，その煽りを食っているのが既存の独自拡張の山だ．C++ AMPもその例に漏れず，過去のコンパイラでコンパイルできたコードがコンパイルできない，といったバグはもちろんのこと，そもそもヘッダが過去のMSVCの(規格違反な)仕様を前提として実装されていたためincludeするとビルドエラーになるなど，散々な状態であった．
 
 ## C++ AMPの死
 
@@ -122,10 +117,8 @@ C++ AMPはdeprecatedになったので，とりあえず死ぬ事自体は避け
 
 ### C++ AMPからの移行先
 
-C++ AMPでいくつかプロジェクトを書いてきたわけだが，これからも使い続けるわけにはいかない．
-というわけで，C++ AMPと同等の特徴を持ったヘテロジニアスコンピューティングAPIを…と言いたいのだが，これが(おそらく)無いのである．
-以下に検討した移行先について表にまとめ，その後それぞれについて詳しく述べる．
-なお，ここではWindows上で動作するGUIプログラムと連携させる，という用途を念頭に置いている．
+C++ AMPでいくつかプロジェクトを書いてきたわけだが，これからも使い続けるわけにはいかない．というわけで，C++ AMPと同等の特徴を持ったヘテロジニアスコンピューティングAPIを…と言いたいのだが，これが(おそらく)無いのである．
+以下に検討した移行先について表にまとめ，その後それぞれについて詳しく述べる．なお，ここではWindows上で動作するGUIプログラムと連携させる，という用途を念頭に置いている．
 
 |  | 単一ソース | 最新のC++の機能 | グラフィックスAPIとのinterop | デバイス非依存 | 突然死の危険性がない |
 | - | :-: | :-: | :-: | :-: | :-: |
@@ -171,8 +164,7 @@ C++ AMPでいくつかプロジェクトを書いてきたわけだが，これ�
 
 とまぁこんな感じで，要件を満たしているAPIが存在するとは言い切れず，また仮にSYCLが要件を満たしたとしてC++ AMPに比べてグラフィックスAPIのリソースを持ち込む方法はどうしても迂遠になる．移植コストもそれなりに高くつくであろう．さらに，どう足掻いても「Visual Studioさえあれば使えます！」というヘッダオンリーライブラリにはならないので，どうしても厳しい面が残る^[この点は環境を指定して別個のライブラリとして実装すればよいのだが，一方でグラフィックスAPI(のラッパー)との乗り入れがしにくくなる面があり，従来は1つのライブラリでうまいことできていたのに…どうして…]．
 
-さて，私と同様に[既存のC++ AMP資産が唐突にdeprecatedによって死滅することとなった被害者によるfeedback](https://developercommunity.visualstudio.com/t/c-amp-headers-are-deprecated-what-is-the-replaceme/1495203)がある(先程の今後のサポート状況の見通しはこのfeedbackに対する回答である)．
-彼もまたOpenCL，OpenACC，C++17 Parallel Algorithmsそれぞれについて検討した結果いずれも目的には合致しなかったようである^[特に彼の場合は「VSやMSBuildがサポートしている」「比較的容易に記述できる」あたりが難点か]が，このfeedbackに以下のような返答が記載されている．
+さて，私と同様に[既存のC++ AMP資産が突然のdeprecatedによって死滅することとなった被害者によるfeedback](https://developercommunity.visualstudio.com/t/c-amp-headers-are-deprecated-what-is-the-replaceme/1495203)がある(先程の今後のサポート状況の見通しはこのfeedbackに対する回答である)．彼もまたOpenCL，OpenACC，C++17 Parallel Algorithmsそれぞれについて検討した結果いずれも目的には合致しなかったようである^[特に彼の場合は「VSやMSBuildがサポートしている」「比較的容易に記述できる」あたりが難点か]が，このfeedbackに以下のような返答が記載されている．
 
 > [About the replacement technologies, we currently have plans to add them to the VC AMP documentation page at https://docs.microsoft.com/en-us/cpp/parallel/amp/cpp-amp-overview?view=msvc-160.](https://developercommunity.visualstudio.com/t/c-amp-headers-are-deprecated-what-is-the-replaceme/1495203#TPIN-N1497575)
 
