@@ -113,7 +113,7 @@ C++ AMPはdeprecatedになったので，とりあえず死ぬ事自体は避け
 > [we plan to support them at least through VS 2022 lifecycle, which is 5 years after last update + another 5 for extended support](https://developercommunity.visualstudio.com/t/c-amp-headers-are-deprecated-what-is-the-replaceme/1495203#TPIN-N1497575)
 
 ということで，とりあえずVS2022までは引き続きサポートされるらしい^[ほんとか？ちゃんとバグ取るか？ / ちなみにVS2022 Preview2時点では私が報告した[このバグ](https://developercommunity.visualstudio.com/t/C-AMP-doesnt-work-in-lambda-expressio/1448841)が未修正である．先述のヘッダincludeしただけでCE問題は直っていた]．
-次がVS2027ぐらいになるっぽいが，そこでも引き続きVS2022のMSVCをインストールすれば一応使えるはずだ．かろうじてむこう10年は既存資産がそのまま実行できる，というのが **現状の** 見通しである．
+VS2022のさらに次のバージョンでも引き続きVS2022のMSVCをインストールすれば一応使えるはずだ．かろうじてむこう10年は既存資産がそのまま実行できる，というのが **現状の** 見通しである．
 
 ### C++ AMPからの移行先
 
