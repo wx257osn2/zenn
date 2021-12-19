@@ -305,7 +305,7 @@ __kernel void convolution_general(
 
 ### ClangでOpenCL C++をビルドする
 
-というわけでようやく本記事の本題なのですが，実はClangはOpenCL C++フロントエンドも持っています．
+というわけでようやく本記事の本題なのですが，実はClangはOpenCL C++フロントエンドも持っています^[[厳密にはOpenCL C++実装ではなく，C++17の機能をいくつか使えるだけ](https://clang.llvm.org/docs/UsersManual.html#c-for-opencl)とある．OpenCL C++との具体的な差分としては，おそらくOpenCL C++標準ライブラリが無い，というあたりだろうか(詳細はちゃんと調べてない)]．
 `-cl-std=CLC++` とすることでOpenCL C++でコンパイルします．
 
 ```make
