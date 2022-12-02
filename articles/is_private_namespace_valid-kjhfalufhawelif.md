@@ -76,7 +76,7 @@ namespace {
 > An [_unnamed-namespace-definition_](https://timsong-cpp.github.io/cppwp/n4861/namespace.def#nt:unnamed-namespace-definition) behaves as if it were replaced by
 > 
 > ```cpp
-> inline namespace unique { /* empty body */ }
+> /*略*/ namespace unique { /* empty body */ }
 > using namespace unique ;
 > namespace unique { namespace-body }
 > ```
