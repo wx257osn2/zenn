@@ -7,7 +7,7 @@ published: true
 ---
 
 :::message
-この記事は[C++ Advent Calendar 2022](https://qiita.com/advent-calendar/2022/cxx)の2日目の記事…ということになりました．詳細は[こちら](TODO: ツイートしたらここを修正)．
+この記事は[C++ Advent Calendar 2022](https://qiita.com/advent-calendar/2022/cxx)の2日目の記事…ということになりました．詳細は[こちら](https://twitter.com/wx257osn2/status/1598719220069847041)．
 昨日は[lewisacid(`@acd1034`)](https://twitter.com/acd1034)さんの「[メンバ関数の新しい書き方、あるいは Deducing this](https://zenn.dev/acd1034/articles/221117-deducing-this)」でした．
 :::
 
