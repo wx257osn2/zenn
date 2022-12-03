@@ -140,7 +140,7 @@ int main(){
 }
 ```
 
-[[namespace.unnamed]/1](https://timsong-cpp.github.io/cppwp/n4861/namespace.unnamed#1)から，これは以下のコードと概ね等価です:
+[`[namespace.unnamed]/1`](https://timsong-cpp.github.io/cppwp/n4861/namespace.unnamed#1)から，これは以下のコードと概ね等価です:
 
 ```cpp
 namespace test{
