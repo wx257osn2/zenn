@@ -148,7 +148,7 @@ C++ AMPでいくつかプロジェクトを書いてきたわけだが，これ�
         - KhronosのpresidentであるNeil TrevettがNVIDIAのvice presidentを兼任しているので，彼が任を解かれない限りNVIDIAがコンシューマ向けGPUのOpenCLサポートを辞めるということはないはずだ^[OpenCL未サポートのNVIDIA製品として，Jetsonシリーズがある]．
         - AMDも現状Windows上ではOpenCLを使え，というのが公式見解なので当面は大丈夫だろう．
         - IntelもOpenCL 2.0の策定などに結構口出ししていた印象なのでたぶん大丈夫だと信じている．
-        - ところで近年OpenCLの策定に関わっていたのに自社製品ではdeprecatedにしてしまったAppleという会社があって…
+        - ところでOpenCLの策定に関わっていたのに近年自社製品ではdeprecatedにしてしまったAppleという会社があって…
 4. HIP
     - その実態はちょっとしたプリプロセッサと各コンパイラへの振り分けを行うスクリプト群だったはず．
     - 一応HIP Clangであれば `nvcc` よりはC++対応はマシだろうが，Windowsで動作させるなら現実的には `nvcc` がバックエンドとなるため， `nvcc` の問題はすべて引きずることになる．また，Intel製GPUをサポートできない．
