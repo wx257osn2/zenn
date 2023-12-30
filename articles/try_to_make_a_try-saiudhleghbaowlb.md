@@ -1,5 +1,5 @@
 ---
-title: "Try to make a `try` !"
+title: "Try to make a try !"
 emoji: "🦊"
 type: "tech"
 topics: ["cpp"]
