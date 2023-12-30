@@ -11,7 +11,7 @@ published: true
 19日目は[ラクラムシ(`@raclamusi`)](https://twitter.com/raclamusi)さんの「[C++ コンパイル時パスワード認証　〜コードを不正コンパイルから守ろう！〜](https://qiita.com/Raclamusi/items/89b9b7df0cd61e285a54)」でした．
 :::
 
-[I](https://twitter.com/wx257osn2)です．
+[I(`@wx257osn2`)](https://twitter.com/wx257osn2)です．
 
 :::details ご挨拶
 各位，今年もC++ Advent Calendar 2023にご参加いただきありがとうございます！
