@@ -383,10 +383,8 @@ public:
     return awaiter{std::move(e), this->result};
   }
   void await_transform(auto&&) = delete;
-  void unhandled_exception()const{
-    auto ep = std::current_exception();
-    if(ep)
-      std::rethrow_exception(ep);
+  [[noreturn]] void unhandled_exception()const{
+    throw;
   }
 };
 
@@ -430,7 +428,7 @@ adc2023::expected<double, std::string> f(int x, int y){
 
 ## 性能を比較してみる
 
-[Quick C++ Benchmarkを用いて比較してみました](https://quick-bench.com/q/pzRjZDV-KW45oZmnrCHl5q3TWSg)．
+[Quick C++ Benchmarkを用いて比較してみました](https://quick-bench.com/q/Uv7X7vzDycNpnolLD1XLOBqXJrI)．
 GCCを使うとまたいろいろと変わるのですが， ~~面倒くさいので~~ 簡単のために今回はClangのみを用いて結果を比較します．
 
 ![実行時間チャート Clang](/images/try_to_make_a_try-saiudhleghbaowlb/pzRjZDV-KW45oZmnrCHl5q3TWSg.png)
@@ -444,7 +442,7 @@ GCCを使うとまたいろいろと変わるのですが， ~~面倒くさい�
 
 # まとめ
 
-[あなたと犬小屋，今すぐ動作確認](https://wandbox.org/permlink/QoiJAyocvuxbv8Xe)
+[あなたと犬小屋，今すぐ動作確認](https://wandbox.org/permlink/erqNzwuxp5o0N7v6)
 
 というわけであの手この手でtry operatorのようなものを作ってみました．
 標準規格準拠・記述の簡潔さ・実行時性能を全て満たすためには，やはりまともな言語機能として生えてきてもらうしかなさそうです．
