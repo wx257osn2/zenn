@@ -8,7 +8,7 @@ published: true
 
 :::message
 この記事は[C++ Advent Calendar 2024](https://qiita.com/advent-calendar/2024/cxx)の20日目の記事です(遅刻)．
-19日目は[@yumetodo](https://misskey.dev/@yumetodo)さんの「[それはCOM STAと並列処理の三体問題との戦いだった ～Optimal Biz Teleworkの機能をOptimal Bizに部分取り込みする～](https://tech-blog.optim.co.jp/entry/2024/12/19/100000)」でした．
+19日目は[yumetodo(@yumetodo@misskey.dev)](https://misskey.dev/@yumetodo)さんの「[それはCOM STAと並列処理の三体問題との戦いだった ～Optimal Biz Teleworkの機能をOptimal Bizに部分取り込みする～](https://tech-blog.optim.co.jp/entry/2024/12/19/100000)」でした．
 :::
 
 [I](https://twitter.com/wx257osn2)です．C++ Advent Calendar 2024，今年はそこそこ状況を見ていたのですが，なんやかんやありつつも(私以外は概ね)ちゃんと記事が公開されてていい感じでしたね．主催が率先して遅刻するのをやめろ．
