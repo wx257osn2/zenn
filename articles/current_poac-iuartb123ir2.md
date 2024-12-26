@@ -21,7 +21,7 @@ C++にはRustにおけるCargoのようなまともなビルドツール兼パ�
 
 ## poacとは
 
-poacとは[情報処理推進機構](https://www.ipa.go.jp/)が主催している[未踏IT人材発掘・育成事業](https://www.ipa.go.jp/jinzai/mitou/it/about.html)の[2018年度採択プロジェクトに端を発する](https://www.ipa.go.jp/jinzai/mitou/it/2018/gaiyou_t-2.html)松井健さんの個人開発プロジェクトで，ものすごく乱雑に言えばC++版のCargoを作ろうとするものです^[実際にはCargoと全く同一のものを目指しているわけではないと思いますが，少なくともCLIのUI/UXについては相当Cargoを参考にしてると思う]．
+[poac](https://github.com/poac-dev/poac)とは[情報処理推進機構](https://www.ipa.go.jp/)が主催している[未踏IT人材発掘・育成事業](https://www.ipa.go.jp/jinzai/mitou/it/about.html)の[2018年度採択プロジェクトに端を発する](https://www.ipa.go.jp/jinzai/mitou/it/2018/gaiyou_t-2.html)松井健さんの個人開発プロジェクトで，ものすごく乱雑に言えばC++版のCargoを作ろうとするものです^[実際にはCargoと全く同一のものを目指しているわけではないと思いますが，少なくともCLIのUI/UXについては相当Cargoを参考にしてると思う]．
 個人開発故，松井さんのライフステージに応じて開発が止まっていた時期などもあり，開発開始から6年程度経とうとしていますが今のところはまだWIPです．
 
 実は私も去年の4月頃までは暇なときにコントリビューションをしていたのですが，なかなか時間も取れず1年半くらいはメールで通知を眺めている程度の感じでした．
