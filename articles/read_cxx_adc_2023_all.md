@@ -450,7 +450,7 @@ GameObjectの作成とコンポーネントの追加: 47.3202ms
 
       それはそう．でもいくら計測しても速くする手段を知らないと速くはできないのですよね…
 - static-polymorph game objectはそれなりに健闘しているがまだまだ遅い
-    - ちなみにこの実装 `std::vector<boost::small_vector<std::variant<TransformComponent>, 1>>` 相当になっているので，サイズとvariantのタグが間に挟まるぐらいである程度は `TransformComponent` がメモリ上近い位置に置いてあるなんですが…やはり分岐も入りますし完全に連続している時ほどの速度にはなりませんね．
+    - ちなみにこの実装 `std::vector<boost::small_vector<std::variant<TransformComponent>, 1>>` 相当になっているので，サイズとvariantのタグが間に挟まるぐらいである程度は `TransformComponent` がメモリ上近い位置に置いてあるんですが…やはり分岐も入りますし完全に連続している時ほどの速度にはなりませんね．
         - コンポーネントの種類が増えれば `boost::small_vector` の静的確保サイズが増えるようになってるので，どんどん遅くなりそう．それはそれとして1種類しかcomponentが無いのもECS側に過剰に有利になってそうな気もしないでもない
     - ここから(性能面での)enttの効能は十分見てとれる
 
