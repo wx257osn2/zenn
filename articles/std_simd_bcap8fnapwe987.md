@@ -308,7 +308,7 @@ saxpy_avx2:      0.0794373ms
 
 ### matmul
 
-$M \times K$ の行列 $A$ と $K \times N$ の行列 $B$ を書けて $M \times N$ の行列Cに結果を入れます．
+$M \times K$ の行列 $A$ と $K \times N$ の行列 $B$ を掛けて $M \times N$ の行列Cに結果を入れます．
 ナイーブなコードだとこんな感じ:
 
 ```cpp:naiveな密行列積
