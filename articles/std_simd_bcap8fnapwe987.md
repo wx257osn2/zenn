@@ -8,7 +8,7 @@ published: true
 
 :::message
 この記事は[C++ Advent Calendar 2025](https://qiita.com/advent-calendar/2025/cxx)の20日目の記事です(遅刻)．
-19日目は…[kizul](https://qiita.com/kizul_v2)さんがLLVMでなんかするらしい(遅刻)．
+19日目は…[kizul](https://qiita.com/kizul_v2)さんの『[LLVMとLLDをwasmで組み込んで、LLVM系コンパイラの全ビルドから実行までをブラウザ上で完結させよう](https://qiita.com/kizul_v2/items/acc6d8ab7982e9d88704)』です．
 :::
 
 [I(`@wx257osn2`)](https://twitter.com/wx257osn2)です．
@@ -23,29 +23,53 @@ published: true
 
 ## そもそも: SIMDって何？
 
-> もう時間がないんです！
+SIMDは"Single Instruction, Multiple Data"の略です．
+フリンがコンピューターアーキテクチャを2x2の4種に分類したもの(フリンの分類)の1つとなります:
 
-というわけで各自ググってください(後日加筆すると思う)
+![flynn.png](/images/std_simd_bcap8fnapwe987/flynn.png)
 
-:::message
-とりあえず以下を読むに当たっての前提は:
+現代のCPUには大抵SIMD命令というものが実装されています．
+つまり，複数のデータに同じ計算をするような命令です．
+アイデアとしては，「複数のデータに対して同じ処理Aを要素毎に行う(e.g. 4つの浮動小数点数の絶対値を取る)」を「単一のデータに処理Aを行う(e.g. ある浮動小数点数の絶対値を取る)」のデータ数倍より短い時間(e.g. 前者が2サイクル，後者が1サイクル)で実行できれば，同一の処理を複数のデータに適用する際には高速に(e.g. $\frac{4}{1} / \frac{2}{1} = 2 $倍で)処理できますね．
+そして画像や音声といったマルチメディアには複数のデータに対して同じ計算を適用することが多々ある(データ並列な処理な)ので，SIMD命令を使うと実行速度がグンと速くなります．
+他には行列計算などもデータ並列なためSIMD命令が有効です．
+現代ではLLMをはじめとした機械学習は大体行列演算ですから，SIMDな操作の重要性は増していると言えます．
 
-- ISA・CPU毎に使える命令が異なる
-    - 四則演算とかはまぁ大体載ってるが，レジスタ内シャッフルにどういった制約があるかとか，gather/scatter(ランダムメモリアクセス)やcompactがあるかとか，interleave/deinterleaveメモリアクセス操作を持っているか，とかはまちまち
-    - また，命令セット側で保証されているレジスタの数も異なる
-        - もっと言えば
-- 可搬性の高い方法としてはコンパイラのauto vectorizationに委ねるか，いい感じに各環境に向けて書かれたライブラリを使うなど
-- 可搬性の低い方法としてはintrinsicsとかアセンブリを直に書くなど
+そんなSIMD命令ですが，CPUの命令なのでISA(Instruction Set Architecture, 命令セットアーキテクチャ)毎に異なる命令を持ちます．
+どれくらい異なるのか，具体例を挙げてみましょう．
+x86_64だとAVX2やAVX-512など，aarch64だとAdvanced SIMD(NEON)があります．
+x86_64の例として挙げた2つは拡張命令セットなので，CPUによって実装状況はまちまちです．
+一方aarch64のNEONはARMv8の基本命令セットに含まれているので，ARMv8のCPUでは常に使うことができます．
+AVX2は命令セット上256bitのSIMDレジスタを16個使えることになっています．なっていますが，実装上は128bit SIMDレジスタを2本使って処理する実装がありました(AMD Zen)．gather/scatterが使えますが，deinterleave load/interleave store命令は無いです．masked load/storeも無いです．
+AVX-512は命令セット上512bitのSIMDレジスタを32個使えることになっています．なっていますが，実装上は256bit SIMDレジスタを2本使って処理する実装がありました(AMD Zen 4)．gather/scatterが使えますが，deinterleave load/interleave store命令は無いです．masked load/storeを持っています．
+NEONは命令セット上128bitのSIMDレジスタを32個使えることになっています．gather/scatterは使えませんが，deinterleave load/interleave store命令があります．masked load/storeは無いです．
+ちなみに「NbitのSIMDレジスタをM個使えることになっています」と述べましたが，これはISA側で扱えるレジスタの数で，物理レジスタは必ずしもM本とは限らない点に注意です．多くの場合M本より多い^[Nbit未満のレジスタを複数本使ってる実装が実在する以上，M本未満のCPUも成立はしそうですけど…だいぶ遅そうなのであんまり現実的ではない気がします]物理レジスタを持っており，レジスタリネーミングをかけるようになっているはず．
 
-あたり
-:::
+とまぁこんな感じでCPU・ISA毎に状況はまちまちで，intrinsics(CPUの命令と直接対応するコンパイラ組み込み関数)とかアセンブリ直書きとかで書いてしまうと特定のISAしか対応できなくなってしまいます(例えばAVX-512のintrinsicsでコードを書くとAVX2までしかサポートしてないx86_64 CPUとかaarch64のCPUでは動かせないプログラムになる)．
+というかそもそもSIMDのコードを処理系毎に書くのはしんどいという話があります(それはそう)．
+一方で，より可搬性の高い方法としてはコンパイラのauto vectorization(自動ベクトル化)に委ねたり，特定処理を複数環境向けに(e.g. AVX2とNEONそれぞれのintrinsicsで)書かれたライブラリを使ったり，SIMD命令のintrinsicsをラップしたライブラリを使うなどがありますが，auto vectorizationは複雑なコードをうまくSIMD化できなかったりしますし，特定処理のライブラリは使いたい処理が無かったり，あるいは処理をカスタマイズしたいときに融通が利かないことが多いです．
+
+SIMD命令をラップしたライブラリならSIMDな操作であることはコンパイラに対してもコードの読み手に対しても明示できるし，環境差異を吸収できるのでいいとこ取りのように見えます．
+では現実はどうなのでしょうか．
 
 ### SIMD命令統一は険しい道のり
 
-SIMDのコードを処理系毎に書くのはしんどいという話があります(それはそう)．
-それ故，これまでも数多の人類がオレオレSIMD大統一ライブラリを提案し続けてきました:
+これまでに数多の人類がオレオレSIMD大統一ライブラリを提案し続けてきました:
 
-- (ここにいくつか実装を書く)
+- [EVE](https://github.com/jfalcou/eve)
+    - アクティブなものとしては一番有力な気がする
+- [XSimd](https://github.com/xtensor-stack/xsimd)
+    - アクティブ．EVEよりちょっと歴史が長い．WASMとかRVVとかもサポートしてるのが強みか
+- [Vc](https://github.com/VcDevel/Vc)
+    - libstdc++に載ってる `std::experimental::simd` のベースになったライブラリ．もうmaintenance mode
+- [libsimdpp](https://github.com/p12tic/libsimdpp)
+    - この中では最古か．MIPSをサポート
+- [Generic SIMD Library](https://github.com/genericsimd/generic_simd)
+    - ACM SIGPLANの並列プログラミング系のトップカンファPPoPP(Principles and Practice of Parallel Programming)のワークショップWPMVP(Workshop on Programming Models for SIMD/Vector Processing) 2014で発表されたライブラリ(なので[論文](https://raw.githubusercontent.com/genericsimd/generic_simd/master/docs/Generic.SIMD.Library.WPMVP2014.pdf)付き)．発表以後更新が無い．ちなみにWPMVP 2014にはBoost.SIMDも出てました
+- [UME::VECTOR](https://github.com/edanor/umevector)
+    - ISC High Performance 2017で発表されたライブラリ．Expression Templateを使えばオーバーヘッドが抑えられるんじゃ，みたいなことを主張している．ここ数年更新が無い
+- [NSIMD](https://github.com/agenium-scale/nsimd)
+    - おそらくBoost.SIMDの後継．ここ数年更新が無い
 
 しかし，おそらく皆さんどれもそんなに聞き馴染みがないのではないでしょうか．
 
@@ -63,8 +87,8 @@ SIMDのコードを処理系毎に書くのはしんどいという話があり�
 ## `std::simd`
 
 さて，そんな中C++26で採用されたのが `std::simd` ，つまり標準ライブラリでSIMDを統一しようという試みです．
-サードパーティ製ライブラリとは異なりある程度コンパイラマジックを前提とできること^[もしかするとunsized Arm SVEを上手くサポートできるかもしれない．まぁそうしたら今度 `std::simd::vec<T>` のサイズはどうなるんだ問題が出てくるのでそんなに簡単でもないとは思うが…]，標準に入っているのでどんな環境でも使える(少なくとも動きはする)ことが期待できること，あたりは強みかなと思います．
-一方で，著者としては本当に十分な速度を得られるのかやや懐疑的ではあります．
+サードパーティ製ライブラリとは異なりある程度コンパイラマジックを前提とできる点^[もしかするとunsized Arm SVEを上手くサポートできるかもしれない．まぁそうしたら今度 `std::simd::vec<T>` のサイズはどうなるんだ問題が出てくるのでそんなに簡単でもないとは思うが…]，標準に入っているのでどんな環境でも使える(少なくとも動きはする)ことが期待できる点，あたりは強みかなと思います．
+一方で，私としては本当に十分な速度を得られるのかやや懐疑的ではあります．
 というか，上述のように私はintrinsics書けばいいやと思っているのでそんなに必要性を感じていないというところがある(この辺りは[同じくC++26で入った `<linalg>` についてもBLAS有識者は似たようなこと考えてそう](https://168iroha.net/blog/article/202412020035/#idx-1-e37d85b08738f1b4e26ab1a35876fdab9f59b0b8733ac1a4482226986ab07462)な気がします)．
 
 まずは提案文書の方から軽く歴史を追いかけてみましょう．
@@ -80,7 +104,7 @@ Introductionに記載の通り，当該文書は[2018年に発行のPrallelism T
 
 ---
 
-というわけで実はP3287R3の後に[P3691R1](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3691r1.pdf)がマージされており，命名についてはこれが大凡の最終稿という感じ．
+実はP3287R3の後に[P3691R1](https://www.open-std.org/jtc1/sc22/wg21/docs/papers/2025/p3691r1.pdf)がマージされており，命名についてはこれが大凡の最終稿という感じ．
 というわけでベクトル型は `std::simd::vec<T>` となりました．
 今のところこれを反映したドキュメントサイトは見当たらないので，コードを書く場合はworking draftを読みに行く以外手が無いです．がんばれ^[まぁ私は今回そんなに突っ込んだ機能まで触るに至ってないので，なんとなく雰囲気で書きましたが…]
 
@@ -118,7 +142,7 @@ READMEにはどの提案文書まで実装されてるかが記載してあり�
 
 P2663R7(複素数サポート), P2664R11(permutationやgather/scatterのサポート)^[部分的に実装されてるっぽい？時間がないので試せてない], P2876R3(コンストラクタなどの拡張), P3480R6(`std::simd::vec<T>` にrange accessサポートを追加する提案)^[読み取り専用のrange accessサポートは提供されているが，P3480R6では書き込みも可能にするよう書いてある], P3691R1(`std::datapar` 名前空間を消すやつ)の5つは未サポート扱いです．
 ここで致命的なのはP3691R1でしょう．
-他のは最悪無くても不便なだけで規格に反したコードは生まれませんが，P3691R1のみサポートについては現時点で当該ライブラリを使ってコードを記述しようものなら確実に規格と反した，存在しないはずの名前空間のエンティティを扱うコードとなってしまいます．
+他のは最悪無くても不便なだけで規格に反したコードは生まれませんが，P3691R1については現時点で当該ライブラリを使ってコードを記述しようものなら確実に規格と反した，存在しないはずの名前空間のエンティティを扱うコードとなってしまいます．
 困りましたね．
 
 困ったので，[P3691R1を適用済みのものをご用意しました](https://github.com/wx257osn2/GSI-HPC-simd)^[絶妙に面倒な作業で大変だった．あと気づいたのが21日とかで :innocent: って感じだった(それまで何も気づかずに `std::datapar::simd<T>` を使ってコードを書いていました…)]．
@@ -132,8 +156,7 @@ P2663R7(複素数サポート), P2664R11(permutationやgather/scatterのサポ�
 
 ### saxpy
 
-saxpyとは何かというと，時間がないのでググってください(そのうち加筆します…)．
-
+saxpyは"Single precision A X Plus Y"，つまり単精度浮動小数点数で $aX + Y$ ($a$ はスカラー値， $X$ および $Y$ はベクトル値)を計算するコードです．
 雑に書くなら以下のような感じ:
 
 ```cpp:naiveなsaxpy
@@ -178,7 +201,7 @@ saxpy_std_simd0: 0.655166ms
 
 無事遅くなりました．なんでや！
 
-結論から書くと，実際に読み込む値が `std::simd::vec<float>::size()` であろうとなかろうと(少なくとも参考実装では) `std::simd::partial_load` を使うとその時点でメチャクチャ遅くなります^[内部で読み書きするかしないかのフラグオブジェクトが生成されていて，こいつの構築が結構重いっぽい？]．
+結論から書くと，実際に読み込む値が `std::simd::vec<float>::size()` であろうとなかろうと(少なくとも参考実装では) `std::simd::partial_load` を使うとその時点でメチャクチャ遅くなります^[一応AVX-512のmasked loadまでは使ってくれてそうなのですが，masked storeのタイミングでテンポラリバッファに一度普通のstoreで書き出した後，内部でbit maskを作って1bitずつ書き込むかどうか判定してスカラな書き込みをする処理になってるっぽい？なんでだよ]．
 だから端数部の処理以外では `std::simd::unchecked_load` を使う必要があったんですね．
 
 ```cpp:std::simd難しいなぁ
@@ -254,7 +277,7 @@ void saxpy_avx2(float a, const float* x, const float* y, float* z, std::size_t n
 AVX2では `_mm256_fmadd_ps` に直接 `float` は渡せないので，事前にSIMDレジスタに持ち上げておく必要があります．
 で，結果はというと:
 
-```cpp
+```
 array size: 1000003, 1000 times
 saxpy_naive:     0.260703ms
 saxpy_std_simd0: 0.655166ms
@@ -280,7 +303,7 @@ void saxpy_std_simd3(float a, const float* x, const float* y, float* z, std::siz
 }
 ```
 
-```cpp
+```
 array size: 1000003, 1000 times
 saxpy_naive:     0.260703ms
 saxpy_std_simd0: 0.655166ms
@@ -291,7 +314,7 @@ saxpy_avx2:      0.0794373ms
 ```
 
 待て待て待て，なんで `std::simd::fma` を呼ぶとSIMD化が阻害されるんだ．
-流石に無茶苦茶すぎるので，試しに[アセンブリを眺めてみます](https://godbolt.org/z/h5b69cf4c)．
+流石に無茶苦茶すぎるので，試しに[アセンブリを眺めてみます](https://godbolt.org/z/bjqP483cP)．
 すると， `saxpy_std_simd0` から `saxpy_std_simd3` までauto vectorizationが有効だと `zmm` に対する `vfmadd213ps` (=AVX-512のfused multiply add)が呼ばれているのに対して，auto vectorizationが無効だと `saxpy_std_simd0` から `saxpy_std_simd2` までは `vfmadd213ss` (=スカラのFMA)が呼ばれていることがわかります．
 どうもGCC15.2の最適化器と `std::simd::fma` の相性があまり良くないらしく，なにかあるとスカラ命令に落ちてしまうみたいです．
 というかたぶん `std::simd::fma` が最適化器によるauto vectorizationを期待したスカラ実装になってたりするか…？(ちょっと調査不足なのでよくわかってませんが)
@@ -421,8 +444,8 @@ matmul_std_simd0:      1228.37ms
 matmul_std_simd1:      1384.78ms
 ```
 
-少し遅いのですが，この実装に対してブロッキング^[小さいループを内側に作ることでメモリアクセスの範囲を狭め，ローカリティを上げるテク．キャッシュミスを減らしてメモリアクセス効率を上げる効果がある．適切なブロックサイズはCPU毎に異なるので，本当はパラメータを調整してそのマシンに最適なブロッキングサイズを同定すべき]を行います．
-ブロッキングサイズを真面目に吟味してる暇は無いので今回は適当に64でやります:
+少し遅いのですが，この実装に対してブロッキング^[ローカリティを上げるために小さいループを内側に作るテク．キャッシュミスを減らしてメモリアクセス効率を上げる効果がある]を行います．
+ブロッキングサイズを真面目に吟味してる暇は無いので今回は適当に64でやります^[適切なブロックサイズはプロセッサ毎に異なるので，ちゃんとやるならそのマシンに最適なブロッキングサイズを同定すべき]:
 
 ```cpp:64でブロッキング
 void matmul_std_simd1_blocked(const float* a, const float* b, float* c, std::size_t m, std::size_t n, std::size_t k){
