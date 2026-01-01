@@ -8,7 +8,7 @@ published: true
 
 :::message
 この記事は[C++ Advent Calendar 2025](https://qiita.com/advent-calendar/2025/cxx)の20日目の記事です(遅刻)．
-19日目は…[kizul](https://qiita.com/kizul_v2)さんの『[LLVMとLLDをwasmで組み込んで、LLVM系コンパイラの全ビルドから実行までをブラウザ上で完結させよう](https://qiita.com/kizul_v2/items/acc6d8ab7982e9d88704)』です．
+19日目は[kizul](https://qiita.com/kizul_v2)さんの『[LLVMとLLDをwasmで組み込んで、LLVM系コンパイラの全ビルドから実行までをブラウザ上で完結させよう](https://qiita.com/kizul_v2/items/acc6d8ab7982e9d88704)』です．
 :::
 
 [I(`@wx257osn2`)](https://twitter.com/wx257osn2)です．
