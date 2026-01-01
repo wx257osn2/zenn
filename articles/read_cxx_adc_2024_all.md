@@ -401,7 +401,40 @@ Cは可変長引数，Rustならマクロといった可変長な入力に対す
 加えて， `std::print` を完全理解するのも普通にしんどいのだよな(フォーマット文字列のコンストラクタが `consteval` なのでコンパイル時に処理される話など)．
 ただまぁ， `iostream` は見た目が奇っ怪であるが故に興味は引きがちかもしれませんが．
 
-パフォーマンスについては[コメントにもあるように `ostream` の実装に問題がある](https://qiita.com/exli3141/items/694d3040ad91087f2887#comment-75f7ea85e1e40467b0d2)こともあり，いろいろ追試したい(google-benchmarkのセットアップがめんどくさいので後回しにさせてくだち…)．
+パフォーマンスについては[コメントにもあるように `ostream` の実装に問題がある](https://qiita.com/exli3141/items/694d3040ad91087f2887#comment-75f7ea85e1e40467b0d2)こともあり，いろいろ追試したい(google-benchmarkのセットアップがめんどくさいので後回しにさせてくだち…) → しました．
+[ここ](https://gist.github.com/wx257osn2/274ddc7548faab4ed1f475d3760d293e)に置いておきますが，
+
+- `ostream` の実装を修正
+- 実行環境
+    - Ryzen 9 7950X3D
+    - Ubuntu 24.04
+    - g++ 15.2
+
+といった感じ．その結果が以下:
+
+```
+$ ./bench --benchmark_out=out.txt --benchmark_out_format=console
+(中略)
+$ cat out.txt
+2026-01-01T17:19:55+09:00
+Running ./bench
+Run on (32 X 4336.32 MHz CPU s)
+CPU Caches:
+  L1 Data 32 KiB (x16)
+  L1 Instruction 32 KiB (x16)
+  L2 Unified 1024 KiB (x16)
+  L3 Unified 98304 KiB (x2)
+Load Average: 0.09, 0.15, 0.16
+-----------------------------------------------------
+Benchmark           Time             CPU   Iterations
+-----------------------------------------------------
+printf           1244 ns         1244 ns       544007
+ostream           889 ns          622 ns      1072106
+print            1234 ns         1233 ns       560454
+```
+
+意外にも，ostreamが速い結果となりました．
+ほんとかよと思いましたが `sync_with_stdio(false)` を消せば遅くなるし(それでも他2つと同じぐらいのもの)，他2つに `sync_with_stdio(false)` しても速度に差がほぼ出なかったので，ほんとらしい．
 
 ## Day17 「[リテラルの型エイリアスは止めろ、マジで止めろ](https://qiita.com/Hourier/items/795b4ceb6aa798b858b5)」
 
