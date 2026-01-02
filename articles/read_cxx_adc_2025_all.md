@@ -174,10 +174,11 @@ template <> struct hpa::hyper_auto<1, 1> { using type = int; };
 のようにしてやる必要があります．
 その上で， `type` の定義を `std::common_type_t<T, typename hpa::hyper_auto<ID, Depth - 1>::type>` のようにしてやればいい感じに複数の型の共通型を取れるはずです．
 しかし，コンパイル時に `infer` の呼び出し毎に異なる `Depth` を出力することなど可能なのでしょうか．
-実は昔は[コンパイル時に呼び出される度に値が増える関数を実装できた](https://txt-txt.hateblo.jp/entry/2015/05/16/173721)のですが，現在はこれはDRで塞がれてしまっています．
+実は昔は[コンパイル時に呼び出される度に値が増える関数を実装できた](https://txt-txt.hateblo.jp/entry/2015/05/16/173721)ので，これを用いれば `infer` の出力を同じものにしつつ2回目のコンパイル時に異なる `Depth` を得ることができたのですが，現在はこれはDRで塞がれてしまっていて使えません．
 
 結論から言うと，これは現代でもコンパイラマジックを使えば可能です: `std::__is_complete_or_unbounded()` というbuiltinは直接呼び出した場合はコンパイル時でも呼び出される毎に常に最新の結果を返します．
-したがって，以下のコードは多重定義によるエラーとなりません:
+したがって， `infer` で `std::__is_complete_or_unbounded()` を呼び出すコードを吐いておけば2回目のコンパイル時にいい感じに `Depth` が増えていきます．
+具体的には以下のコードは多重定義によるエラーとなりません:
 
 ```cpp
 template <> struct hpa::hyper_auto<1, std::__is_complete_or_unbounded(std::__type_identity<hpa::hyper_auto<1, 0>>{}) + std::__is_complete_or_unbounded(std::__type_identity<hpa::hyper_auto<1, 1>>{}) + std::__is_complete_or_unbounded(std::__type_identity<hpa::hyper_auto<1, 2>>{}) + std::__is_complete_or_unbounded(std::__type_identity<hpa::hyper_auto<1, 3>>{})> { using type = double; };
